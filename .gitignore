@@ -1,0 +1,6 @@
+/_build
+/cover
+/deps
+/config/config.exs
+erl_crash.dump
+*.ez
