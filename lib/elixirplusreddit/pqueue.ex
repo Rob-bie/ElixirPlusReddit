@@ -1,5 +1,9 @@
 defmodule ElixirPlusReddit.PQueue do
 
+  def new do
+    :pqueue.new
+  end
+
   def enqueue(pqueue, request, priority) do
     :pqueue.in(request, priority, pqueue)
   end
