@@ -11,12 +11,19 @@ defmodule ElixirPlusReddit.Mixfile do
   end
 
   def application do
-    [applications: [:logger],
+    [applications: [:logger, :httpotion],
      mod: {ElixirPlusReddit, []}]
   end
 
   defp deps do
-    [{:pqueue, github: "okeuday/pqueue"}]
+    [
+     {:pqueue, github: "okeuday/pqueue"},
+     {:ibrowse, github: "cmullaparthi/ibrowse", tag: "v4.1.2"},
+     {:httpotion, "~> 2.1.0"},
+     {:poison, "~> 1.5"},
+     {:earmark, "~> 0.1", only: :dev},
+     {:ex_doc, "~> 0.11", only: :dev}
+    ]
   end
 
 end
