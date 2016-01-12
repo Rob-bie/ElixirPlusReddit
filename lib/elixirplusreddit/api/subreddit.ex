@@ -15,7 +15,7 @@ defmodule ElixirPlusReddit.API.Subreddit do
   end
 
   def hot(from, tag, subreddit, options) when is_list(options) do
-    listing(from, tag, subreddit, [], :hot, @default_priority)
+    listing(from, tag, subreddit, options, :hot, @default_priority)
   end
 
   def hot(from, tag, subreddit, priority) do
@@ -27,7 +27,7 @@ defmodule ElixirPlusReddit.API.Subreddit do
   end
 
   def new(from, tag, subreddit, options) when is_list(options) do
-    listing(from, tag, subreddit, [], :new, @default_priority)
+    listing(from, tag, subreddit, options, :new, @default_priority)
   end
 
   def new(from, tag, subreddit, priority) do
@@ -39,7 +39,7 @@ defmodule ElixirPlusReddit.API.Subreddit do
   end
 
   def rising(from, tag, subreddit, options) when is_list(options) do
-    listing(from, tag, subreddit, [], :rising, @default_priority)
+    listing(from, tag, subreddit, options, :rising, @default_priority)
   end
 
   def rising(from, tag, subreddit, priority) do
@@ -51,7 +51,7 @@ defmodule ElixirPlusReddit.API.Subreddit do
   end
 
   def controversial(from, tag, subreddit, options) when is_list(options) do
-    listing(from, tag, subreddit, [], :controversial, @default_priority)
+    listing(from, tag, subreddit, options, :controversial, @default_priority)
   end
 
   def controversial(from, tag, subreddit, priority) do
@@ -63,7 +63,7 @@ defmodule ElixirPlusReddit.API.Subreddit do
   end
 
   def top(from, tag, subreddit, options) when is_list(options) do
-    listing(from, tag, subreddit, [], :top, @default_priority)
+    listing(from, tag, subreddit, options, :top, @default_priority)
   end
 
   def top(from, tag, subreddit, priority) do
@@ -75,7 +75,7 @@ defmodule ElixirPlusReddit.API.Subreddit do
   end
 
   def gilded(from, tag, subreddit, options) when is_list(options) do
-    listing(from, tag, subreddit, [], :gilded, @default_priority)
+    listing(from, tag, subreddit, options, :gilded, @default_priority)
   end
 
   def gilded(from, tag, subreddit, priority) do
