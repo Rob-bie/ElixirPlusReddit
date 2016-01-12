@@ -2,7 +2,11 @@ defmodule ElixirPlusReddit.TokenServer do
   use GenServer
 
   @moduledoc """
-  Handles distrubuting and acquiring access tokens. A new token is automatically
+  Handles distrubuting and acquiring access tokens.
+
+  ### Details
+  
+  A new token is automatically
   acquired every 58 minutes. It is possible to manually acquire tokens but should
   only be used when a request returns with the status code 401. (Expired token)
   """

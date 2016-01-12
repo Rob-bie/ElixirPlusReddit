@@ -3,7 +3,11 @@ defmodule ElixirPlusReddit.RequestServer do
 
   @moduledoc """
   Distributes responses, handles rate limiting and implements priority based
-  request issuing. As a consequence of requests being statically rate limited
+  request issuing.
+
+  ### Details
+
+  A consequence of requests being statically rate limited is that
   you must provide a tag and pid with each request. This enables a way to
   deliver responses when they are available and a convenient way to pattern match
   on them. Requests are also accompanied by a priority, priorties create an
@@ -14,8 +18,9 @@ defmodule ElixirPlusReddit.RequestServer do
   alias ElixirPlusReddit.Request
   alias ElixirPlusReddit.PQueue
 
-  @requestserver    __MODULE__
-  @request_interval 1000
+  @requestserver       __MODULE__
+  @request_interval    1000
+  @no_request_interval 500
 
   @doc """
   Start the request server.
@@ -30,7 +35,7 @@ defmodule ElixirPlusReddit.RequestServer do
   end
 
   def init(_) do
-    schedule_request
+    schedule_request(@no_request_interval)
     {:ok, PQueue.new}
   end
 
@@ -41,13 +46,13 @@ defmodule ElixirPlusReddit.RequestServer do
   def handle_info(:next_request, request_queue) do
     case PQueue.is_empty?(request_queue) do
       true  ->
-        schedule_request
+        schedule_request(@no_request_interval)
         {:noreply, request_queue}
       false ->
         {{:value, request_data}, request_queue} = PQueue.dequeue(request_queue)
         %{from: from, tag: tag} = request_data
         resp = issue_request(request_data)
-        schedule_request
+        schedule_request(@request_interval)
         send(from, {tag, resp})
         {:noreply, request_queue}
     end
@@ -68,8 +73,8 @@ defmodule ElixirPlusReddit.RequestServer do
     Request.request(:get, url, strategy)
   end
 
-  defp schedule_request do
-    Process.send_after(@requestserver, :next_request, @request_interval)
+  defp schedule_request(interval) do
+    Process.send_after(@requestserver, :next_request, interval)
   end
 
 end
