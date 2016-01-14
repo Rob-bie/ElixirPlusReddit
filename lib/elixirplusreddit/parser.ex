@@ -17,6 +17,14 @@ defmodule ElixirPlusReddit.Parser do
     "bearer #{resp.access_token}"
   end
 
+  def parse(resp, :listing) do
+    Map.update!(resp.data, :children, fn(children) ->
+      Enum.map(children, fn(child) ->
+        child.data
+      end)
+    end)
+  end
+
   def parse(resp, _) do
     resp
   end
