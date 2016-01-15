@@ -82,6 +82,18 @@ defmodule ElixirPlusReddit.API.Subreddit do
     listing(from, tag, subreddit, [], :gilded, priority)
   end
 
+  def comments(from, tag, subreddit, options, priority) do
+    listing(from, tag, subreddit, options, :comments, priority)
+  end
+
+  def comments(from, tag, subreddit, options) when is_list(options) do
+    listing(from, tag, subreddit, options, :comments, @default_priority)
+  end
+
+  def comments(from, tag, subreddit, priority) do
+    listing(from, tag, subreddit, [], :comments, priority)
+  end
+
   defp listing(from, tag, subreddit, options, endpoint, priority) do
     url = "#{@subreddit_base}/#{subreddit}/#{endpoint}"
     request_data = RequestBuilder.format_get(from, tag, url, options, :listing, priority)
