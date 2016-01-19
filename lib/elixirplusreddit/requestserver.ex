@@ -53,9 +53,13 @@ defmodule ElixirPlusReddit.RequestServer do
         %{from: from, tag: tag} = request_data
         resp = issue_request(request_data)
         schedule_request(@request_interval)
-        send(from, {tag, resp})
+        send_response(from, {tag, resp})
         {:noreply, request_queue}
     end
+  end
+
+  defp send_response(from, {tag, resp}) do
+    send(from, {tag, resp})
   end
 
   defp issue_request(%{method: :post} = request_data) do
