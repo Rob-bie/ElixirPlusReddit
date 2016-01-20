@@ -52,8 +52,8 @@ defmodule ElixirPlusReddit.RequestServer do
         {{:value, request_data}, request_queue} = PQueue.dequeue(request_queue)
         %{from: from, tag: tag} = request_data
         resp = issue_request(request_data)
-        schedule_request(@request_interval)
         send_response(from, {tag, resp})
+        schedule_request(@request_interval)
         {:noreply, request_queue}
     end
   end
