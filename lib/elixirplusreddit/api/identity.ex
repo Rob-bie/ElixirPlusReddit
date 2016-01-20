@@ -6,11 +6,21 @@ defmodule ElixirPlusReddit.API.Identity do
 
   alias ElixirPlusReddit.RequestServer
   alias ElixirPlusReddit.RequestBuilder
+  alias ElixirPlusReddit.Scheduler
 
+  @identity        __MODULE__
   @identity_base   "https://oauth.reddit.com/api/v1/me"
   @default_priority 0
 
-  def me(from, tag, priority \\ @default_priority) do
+  def stream_self_data(from, tag, interval) do
+    Scheduler.schedule(from, tag, {@identity, :self_data}, [@default_priority], interval)
+  end
+
+  def stream_self_data(from, tag, priority, interval) do
+    Scheduler.schedule(from, tag, {@identity, :self_data}, [priority], interval)
+  end
+
+  def self_data(from, tag, priority \\ @default_priority) do
     request_data = RequestBuilder.format_get(from, tag, @identity_base, :ok, priority)
     RequestServer.enqueue_request(request_data)
   end
