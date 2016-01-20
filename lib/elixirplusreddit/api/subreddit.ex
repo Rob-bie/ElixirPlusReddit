@@ -6,6 +6,7 @@ defmodule ElixirPlusReddit.API.Subreddit do
 
   alias ElixirPlusReddit.RequestServer
   alias ElixirPlusReddit.RequestBuilder
+  alias ElixirPlusReddit.Paginator
   alias ElixirPlusReddit.Scheduler
 
   @subreddit       __MODULE__
@@ -140,6 +141,102 @@ defmodule ElixirPlusReddit.API.Subreddit do
     Scheduler.schedule(from, tag, {@subreddit, :new}, [subreddit, options, priority], interval)
   end
 
+  def paginate_hot(from, tag, subreddit) do
+    Paginator.paginate(from, tag, {@subreddit, :hot}, [subreddit, [limit: 1000], @default_priority])
+  end
+
+  def paginate_hot(from, tag, subreddit, options) when is_list(options) do
+    Paginator.paginate(from, tag, {@subreddit, :hot}, [subreddit, put_limit(options), @default_priority])
+  end
+
+  def paginate_hot(from, tag, subreddit, priority) do
+    Paginator.paginate(from, tag, {@subreddit, :hot}, [subreddit, [limit: 1000], priority])
+  end
+
+  def paginate_hot(from, tag, subreddit, options, priority) do
+    Paginator.paginate(from, tag, {@subreddit, :hot}, [subreddit, put_limit(options), priority])
+  end
+
+  def paginate_new(from, tag, subreddit) do
+    Paginator.paginate(from, tag, {@subreddit, :new}, [subreddit, [limit: 1000], @default_priority])
+  end
+
+  def paginate_new(from, tag, subreddit, options) when is_list(options) do
+    Paginator.paginate(from, tag, {@subreddit, :new}, [subreddit, put_limit(options), @default_priority])
+  end
+
+  def paginate_new(from, tag, subreddit, priority) do
+    Paginator.paginate(from, tag, {@subreddit, :new}, [subreddit, [limit: 1000], priority])
+  end
+
+  def paginate_new(from, tag, subreddit, options, priority) do
+    Paginator.paginate(from, tag, {@subreddit, :new}, [subreddit, put_limit(options), priority])
+  end
+
+  def paginate_rising(from, tag, subreddit) do
+    Paginator.paginate(from, tag, {@subreddit, :rising}, [subreddit, [limit: 1000], @default_priority])
+  end
+
+  def paginate_rising(from, tag, subreddit, options) when is_list(options) do
+    Paginator.paginate(from, tag, {@subreddit, :rising}, [subreddit, put_limit(options), @default_priority])
+  end
+
+  def paginate_rising(from, tag, subreddit, priority) do
+    Paginator.paginate(from, tag, {@subreddit, :rising}, [subreddit, [limit: 1000], priority])
+  end
+
+  def paginate_rising(from, tag, subreddit, options, priority) do
+    Paginator.paginate(from, tag, {@subreddit, :rising}, [subreddit, put_limit(options), priority])
+  end
+
+  def paginate_controversial(from, tag, subreddit) do
+    Paginator.paginate(from, tag, {@subreddit, :controversial}, [subreddit, [limit: 1000], @default_priority])
+  end
+
+  def paginate_controversial(from, tag, subreddit, options) when is_list(options) do
+    Paginator.paginate(from, tag, {@subreddit, :controversial}, [subreddit, put_limit(options), @default_priority])
+  end
+
+  def paginate_controversial(from, tag, subreddit, priority) do
+    Paginator.paginate(from, tag, {@subreddit, :controversial}, [subreddit, [limit: 1000], priority])
+  end
+
+  def paginate_controversial(from, tag, subreddit, options, priority) do
+    Paginator.paginate(from, tag, {@subreddit, :controversial}, [subreddit, put_limit(options), priority])
+  end
+
+  def paginate_top(from, tag, subreddit) do
+    Paginator.paginate(from, tag, {@subreddit, :top}, [subreddit, [limit: 1000], @default_priority])
+  end
+
+  def paginate_top(from, tag, subreddit, options) when is_list(options) do
+    Paginator.paginate(from, tag, {@subreddit, :top}, [subreddit, put_limit(options), @default_priority])
+  end
+
+  def paginate_top(from, tag, subreddit, priority) do
+    Paginator.paginate(from, tag, {@subreddit, :top}, [subreddit, [limit: 1000], priority])
+  end
+
+  def paginate_top(from, tag, subreddit, options, priority) do
+    Paginator.paginate(from, tag, {@subreddit, :top}, [subreddit, put_limit(options), priority])
+  end
+
+  def paginate_gilded(from, tag, subreddit) do
+    Paginator.paginate(from, tag, {@subreddit, :gilded}, [subreddit, [limit: 1000], @default_priority])
+  end
+
+  def paginate_gilded(from, tag, subreddit, options) when is_list(options) do
+    Paginator.paginate(from, tag, {@subreddit, :gilded}, [subreddit, put_limit(options), @default_priority])
+  end
+
+  def paginate_gilded(from, tag, subreddit, priority) do
+    Paginator.paginate(from, tag, {@subreddit, :gilded}, [subreddit, [limit: 1000], priority])
+  end
+
+  def paginate_gilded(from, tag, subreddit, options, priority) do
+    Paginator.paginate(from, tag, {@subreddit, :gilded}, [subreddit, put_limit(options), priority])
+  end
+
   def stream_comments(from, tag, subreddit, interval) do
     Scheduler.schedule(from, tag, {@subreddit, :comments}, [subreddit, [], @default_priority], interval)
   end
@@ -154,6 +251,29 @@ defmodule ElixirPlusReddit.API.Subreddit do
 
   def stream_comments(from, tag, subreddit, options, priority, interval) do
     Scheduler.schedule(from, tag, {@subreddit, :comments}, [subreddit, options, priority], interval)
+  end
+
+  def paginate_comments(from, tag, subreddit) do
+    Paginator.paginate(from, tag, {@subreddit, :comments}, [subreddit, [limit: 1000], @default_priority])
+  end
+
+  def paginate_comments(from, tag, subreddit, options) when is_list(options) do
+    Paginator.paginate(from, tag, {@subreddit, :comments}, [subreddit, put_limit(options), @default_priority])
+  end
+
+  def paginate_comments(from, tag, subreddit, priority) do
+    Paginator.paginate(from, tag, {@subreddit, :comments}, [subreddit, [limit: 1000], priority])
+  end
+
+  def paginate_comments(from, tag, subreddit, options, priority) do
+    Paginator.paginate(from, tag, {@subreddit, :comments}, [subreddit, put_limit(options), priority])
+  end
+
+  defp put_limit(options) do
+    case Keyword.has_key?(options, :limit) do
+      true  -> options
+      false -> Keyword.put(options, :limit, 1000)
+    end
   end
 
   defp listing(from, tag, subreddit, options, endpoint, priority) do
