@@ -2,22 +2,21 @@ defmodule ElixirPlusReddit.Paginator do
   use GenServer
 
   @moduledoc """
-  An interface for paginating through listings.
+  A generic interface for paginating through listings.
   """
 
   @paginator __MODULE__
 
-  def paginate(from, tag, {module, function}, arguments, interval) do
-    start_link(from, tag, {module, function}, arguments, interval)
+  def paginate(from, tag, {module, function}, arguments) do
+    start_link(from, tag, {module, function}, arguments)
   end
 
-  def start_link(from, tag, {module, function}, arguments, interval) do
+  def start_link(from, tag, {module, function}, arguments) do
     config = [from: from,
               tag: tag,
               module: module,
               function: function,
-              arguments: arguments,
-              interval: interval]
+              arguments: arguments]
 
     GenServer.start_link(@paginator, config, [])
   end
@@ -28,16 +27,24 @@ defmodule ElixirPlusReddit.Paginator do
   end
 
   def handle_info({tag, resp}, config) do
-    after_id = resp.after
     send(config[:from], {tag, resp})
-    case after_id do
+    case resp.after do
       nil ->
+        send(config[:from], {tag, :complete})
         send(self, :stop)
         {:noreply, config}
       id  ->
-        new_config = update_config(config, id)
-        process_request(new_config, self)
-        {:noreply, new_config}
+        new_config = update_limit(config)
+        cond do
+          get_limit(new_config) <= 0 ->
+            send(config[:from], {tag, :complete})
+            send(self, :stop)
+            {:noreply, new_config}
+          true ->
+            new_config = update_id(new_config, id)
+            process_request(new_config, self)
+            {:noreply, new_config}
+        end
     end
   end
 
@@ -49,7 +56,7 @@ defmodule ElixirPlusReddit.Paginator do
     :ok
   end
 
-  defp process_request([from: _, tag: t, module: m, function: x, arguments: a, interval: _], server) do
+  defp process_request([from: _, tag: t, module: m, function: x, arguments: a], server) do
     arguments = a
     |> Enum.reduce([t, server], fn(arg, acc) -> [arg|acc] end)
     |> Enum.reverse
@@ -57,7 +64,27 @@ defmodule ElixirPlusReddit.Paginator do
     apply(m, x, arguments)
   end
 
-  defp update_config(config, after_id) do
+  defp get_limit(config) do
+    Enum.reduce(config[:arguments], nil, fn(arg, acc) ->
+      case is_list(arg) do
+        true  -> arg[:limit]
+        false -> acc
+      end
+    end)
+  end
+
+  defp update_limit(config) do
+    Keyword.update!(config, :arguments, fn(arguments) ->
+      Enum.map(arguments, fn(arg) ->
+        case is_list(arg) do
+          true  -> Keyword.update!(arg, :limit, fn(limit) -> limit - 100 end)
+          false -> arg
+        end
+      end)
+    end)
+  end
+
+  defp update_id(config, after_id) do
     Keyword.update!(config, :arguments, fn(arguments) ->
       Enum.map(arguments, fn(arg) ->
         case is_list(arg) do
