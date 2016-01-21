@@ -139,8 +139,8 @@ iex(9)> response = capture.(:me)
   name: "elixirplusreddit", 
   over_18: false,
   suspension_expiration_utc: nil}
-iex(10)> IO.puts("Hey, look at me, I'm #{response.name}!")
-Hey, look at me, I'm elixirplusreddit!
+iex(10)> IO.puts("Hey, look at me, I am #{response.name}!")
+Hey, look at me, I am elixirplusreddit!
 :ok
 iex(11)> response = capture.(:me)
 "Nope, nothing, nothing at all." # After five very dramatic seconds.
