@@ -9,11 +9,11 @@ Soon!
 
 ## Setting up your first script
 
-1. *Setting up your script on Reddit*
+*Setting up your script on Reddit*
 
 <img src="http://i.imgur.com/LPlDoul.png" align="center"></img>
 
-2. *Configuring your credentials*
+*Configuring your credentials*
 
 Credentials can either be set inside of `config.exs` or be set manually after EPR is started.
 
@@ -61,7 +61,8 @@ nil
 ```
 
 When EPR is started a token is automatically acquired for us and a new one is acquired automatically when necessary, 
-this can easily be verified.
+this can easily be verified. *NOTE: This assumes that credentials were set inside of config.exs, if they were set manually
+call* `TokenServer.acquire_token` *first. All subsequent tokens will be acquired automatically.*
 
 ```elixir
 iex(4)> TokenServer.token
