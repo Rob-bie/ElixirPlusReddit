@@ -8,12 +8,12 @@ defmodule ElixirPlusReddit.Config do
   Return credentials from config.exs. Credentials are stored as a
   keyword list:
 
-  [
-  username:      username,
-  password:      password,
-  client_id:     client_id,
-  client_secret: client_secret
-  ]
+      [
+        username:      username,
+        password:      password,
+        client_id:     client_id,
+        client_secret: client_secret
+      ]
   """
 
   def credentials do
@@ -26,6 +26,33 @@ defmodule ElixirPlusReddit.Config do
 
   def user_agent do
     Application.get_env(:elixirplusreddit, :user_agent)
+  end
+
+  @doc """
+  Manually configure credentials.
+  """
+
+  def set_config(username, password, client_id, client_secret, user_agent) do
+    creds = [
+      username: username,
+      password: password,
+      client_id: client_id,
+      client_secret: client_secret
+    ]
+
+    Application.put_env(:elixirplusreddit, :creds, creds)
+    Application.put_env(:elixirplusreddit, :user_agent, user_agent)
+  end
+
+  @doc """
+  Check if credentials are configured.
+  """
+
+  def is_configured? do
+   case Application.get_env(:elixirplusreddit, :creds) do
+     nil -> false
+     _   -> true
+   end
   end
 
 end

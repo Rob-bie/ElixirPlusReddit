@@ -6,12 +6,13 @@ defmodule ElixirPlusReddit.TokenServer do
 
   ### Details
   
-  A new token is automatically
-  acquired every 58 minutes. It is possible to manually acquire tokens but should
-  only be used when a request returns with the status code 401. (Expired token)
+  A new token is automatically acquired every 58 minutes. It is possible to manually
+  acquire tokens but should only be used when you manually configure credentials or
+  a request returns with the status code 401. (Expired token)
   """
 
   alias ElixirPlusReddit.API.Authentication
+  alias ElixirPlusReddit.Config
 
   @tokenserver    __MODULE__
   @token_interval  1000 * 60 * 58
@@ -39,14 +40,19 @@ defmodule ElixirPlusReddit.TokenServer do
   # NOTE: The request is sent to the server with send so that it is handled by
   # the handle_info callback.
 
-  def new_token do
+  def acquire_token do
     send(@tokenserver, :new_token)
   end
 
   def init(_) do
-    token_state = Authentication.request_token
-    schedule_token_request
-    {:ok, token_state}
+    case Config.is_configured? do
+      true  ->
+        token_state = Authentication.request_token
+        schedule_token_request
+        {:ok, token_state}
+      false ->
+        {:ok, :no_token}
+    end
   end
 
   def handle_call(:token, _from, token_state) do
