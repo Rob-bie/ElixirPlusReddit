@@ -5,20 +5,51 @@ interface.
 
 ## Installation
 
+Soon!
+
 ## Setting up your first script
 
-## Your first requests
+1. *Setting up your script on Reddit*
+
+<img src="http://i.imgur.com/LPlDoul.png" align="center"></img>
+
+2. *Configuring your credentials*
+
+Credentials can either be set inside of `config.exs` or be set manually after EPR is started.
+
+```elixir
+config :elixirplusreddit, :creds, [
+  username:      "username",
+  password:      "password",
+  client_id:     "[client_id]",
+  client_secret: "[secret]"
+]
+
+config :elixirplusreddit, user_agent: "something meaningful"
+```
+
+or
+
+```elixir
+Config.set_credentials("username", 
+                       "password", 
+                       "[client_id]", 
+                       "[secret]", 
+                       "something meaningful here")
+`````
+
+
+## A gentle introduction
 
 Now that you've got your script set up, let's talk a little bit about how EPR works so we can start talking to
-Reddit! Everytime you make a request it is sent to EPR's request server and stuck inside of a queue and is issued
+Reddit! Everytime you make a request it is sent to EPR's request server and stuck inside of a queue. It is issued
 and processed at a later time. This is how rate limiting is implemented, requests are issued on an interval that
 complies with Reddit's API terms. (*Currently static, hoping to support dymamic ratelimiting in the future*)
 All requests, no matter what data you are requesting, expect a pid or name `from` and a tag `tag`. All `from` is,
 is who is asking for the data so the request server knows who to send it back to. A tag can be anything and is simply
-a way to pattern match on responses when they are received from the request server. This may seem cumbersome now but
-it starts to make sense when you combine this with a genserver. We will see this later but for now, we understand enough 
-to make our first request and I know that's why you're reading this. If you followed the installation instructions jump to
-your project's directory and run `iex -S mix`, if not go read the installation instructions!
+a way to pattern match on responses when they are received. This may seem cumbersome now but it starts to become
+much more intuitive in practice. If you followed the installation instructions and your script is set up,
+jump to your project's directory and run `iex -S mix`, if not go read the installation instructions and set up your script!
 
 Before we do anything, I suggest defining a couple of aliases, this is solely for the sake of your fingers and is not mandatory.
 
@@ -26,8 +57,6 @@ Before we do anything, I suggest defining a couple of aliases, this is solely fo
 iex(1)> alias ElixirPlusReddit.TokenServer
 nil
 iex(2)> alias ElixirPlusReddit.API.Identity
-nil
-iex(3)> alias ElixirPlusReddit.API.Subreddit
 nil
 ```
 
@@ -88,10 +117,8 @@ iex(7)> capture = fn(tag) ->
 ...(7)>   end
 ...(7)> end
 #Function<x.xxxxxxxx/1 in :erl_eval.expr/5>
-
 iex(8)> Identity.self_data(self, :me)
 :ok
-
 iex(9)> response = capture.(:me)
 %{comment_karma: 9, 
   created: 1453238732.0, 
@@ -111,14 +138,14 @@ iex(9)> response = capture.(:me)
   name: "elixirplusreddit", 
   over_18: false,
   suspension_expiration_utc: nil}
-  
-iex(10)> IO.puts("Hey, look at me, I'm #{response.name}")
-Hey, look at me, I'm elixirplusreddit
+iex(10)> IO.puts("Hey, look at me, I'm #{response.name}!")
+Hey, look at me, I'm elixirplusreddit!
 :ok
-
 iex(11)> response = capture.(:me)
 "Nope, nothing, nothing at all." # After five very dramatic seconds.
 ```
 
-The anonymous function `capture` takes a tag and matches it against our mailbox, if it finds something within five seconds it grabs it, otherwise
-we're left with a disappointing message. That's pretty much gist of it, honestly. Let's do one more example. Afterwards we'll learn more about EPR and then finally we'll write a (useless) bot!
+The anonymous function `capture` takes a tag and matches it against our mailbox, if it finds something within five seconds 
+it grabs it, otherwise we're left with a disappointing message. That's pretty much the gist of it, honestly. If you understand this
+you have the proper foundation for making neat stuff. Next we'll cover an overview (non-comprehensive) of EPR and then finally we'll 
+write a (useless) bot!
