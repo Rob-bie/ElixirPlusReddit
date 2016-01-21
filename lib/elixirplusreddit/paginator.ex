@@ -27,7 +27,7 @@ defmodule ElixirPlusReddit.Paginator do
   end
 
   def handle_info({tag, resp}, config) do
-    send(config[:from], {tag, resp})
+    send(config[:from], {tag, resp.children})
     case resp.after do
       nil ->
         send(config[:from], {tag, :complete})
