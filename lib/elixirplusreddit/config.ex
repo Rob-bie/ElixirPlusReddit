@@ -32,7 +32,7 @@ defmodule ElixirPlusReddit.Config do
   Manually configure credentials.
   """
 
-  def set_config(username, password, client_id, client_secret, user_agent) do
+  def set_credentials(username, password, client_id, client_secret, user_agent) do
     creds = [
       username: username,
       password: password,
