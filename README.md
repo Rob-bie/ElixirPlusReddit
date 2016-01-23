@@ -213,16 +213,80 @@ iex(17)> Subreddit.new_comments(self(), :elixir_comments, :elixir, [limit: 100, 
 What we have acheived here is pagination. In practice, you would never do it this way because EPR has built in pagination
 and streaming. I saw no reason to preclude manual pagination and it's nice to know what's happening behind the scenes. Okay, let's
 talk about pagination and streaming now. Actually, you should experiment a bit first! Try to get a user's top submissions and print
-the author and submission title. Type `h ElixirPlusReddit.API.User.top_submissions` in your shell and to get started. Seriously, 
+the upvote count and submission title. Type `h ElixirPlusReddit.API.User.top_submissions` in your shell to get started. Seriously, 
 moving on now.
 
 #### Pagination versus streaming
 
 
-###### Pagination
+##### Pagination
 
-Soon!
+Often times you'll want to get more than 100 items from a listing. As demonstrated in the previous section, it isn't difficult to
+manually pass around the after id but it is not necessary. Let's try paginating through a user's top comments and then talk about
+what's happening.
 
-###### Streaming
+```elixir
+iex(18)> {:ok, pid} = User.paginate_top_comments(self(), :comments, :hutsboR) # I'm hutsboR!
+{:ok, #PID<x.xx.x>}
+```
+
+The first thing you probably noticed is that when we invoke a paginator function a pid is returned with the `:ok` atom. This is
+because paginators are implemented as genservers, they chug away at your request in a separate process and send you data as it
+becomes available. When there's no more data left to be acquired the genserver will gracefully shutdown and clean itself up. To
+see this in action repeatedly call `Process.is_alive?(pid)`.
+
+Another thing you probably noticed is that I didn't specify any options, most notably a limit. Paginators specify a default limit
+of 1000, which is also the most items that you can fetch from a listing. Understand that this is not a limit imposed by EPR but
+by Reddit. If the resource you're fetching from has less items than the limit, it will give you everything that it has to offer. 
+Generous right? Anyways, let's see what's in our mailbox.
+
+```elixir
+iex(19)> response = capture.(:comments)
+[%{user_reports: [], banned_by: nil, link_id: "t3_xxxxxx", ...},
+ %{user_reports: [], banned_by: nil, ...}, %{user_reports: [], ...}, %{...},
+ ...]
+```
+
+That's a list of the top 100 comments. An important difference in return structure relative to our example in the last section
+is that paginators don't bother to return the before and after ids. (and a couple other fields we don't need) It simply returns
+what we referred to as `children` before. That's only the first 100 comments though, right? More comments have probably been
+delivered to our mailbox by now. Let's just flush them out.
+
+```elixir
+iex(20)> flush
+{:comments,
+ [%{user_reports: [], banned_by: nil, link_id: "t3_2c4ka3", ...},
+  %{user_reports: [], banned_by: nil, ...}, %{user_reports: [], ...}, %{...},
+  ...]}
+{:comments,
+ [%{user_reports: [], banned_by: nil, link_id: "t3_2ulqbj", ...},
+  %{user_reports: [], banned_by: nil, ...}, %{user_reports: [], ...}, %{...},
+  ...]}
+{:comments,
+ [%{user_reports: [], banned_by: nil, link_id: "t3_2whi9u", ...},
+  %{user_reports: [], banned_by: nil, ...}, %{user_reports: [], ...}, %{...},
+  ...]}
+{:comments,
+ [%{user_reports: [], banned_by: nil, link_id: "t3_1r6b1t", ...},
+  %{user_reports: [], banned_by: nil, ...}, %{user_reports: [], ...}, %{...},
+  ...]}
+{:comments,
+ [%{user_reports: [], banned_by: nil, link_id: "t3_2ug3hx", ...},
+  %{user_reports: [], banned_by: nil, ...}, %{user_reports: [], ...}, %{...},
+  ...]}
+{:comments,
+ [%{user_reports: [], banned_by: nil, link_id: "t3_1u4hau", ...},
+  %{user_reports: [], banned_by: nil, ...}, %{user_reports: [], ...}, %{...},
+  ...]}
+{:comments, :complete}
+:ok
+```
+
+There's the rest of the comments. Wait, what's that at the bottom? That's actually the interesting bit. When a paginator
+is done paginating it sends one last dying message to let us know that is it has completed it's sole duty. This is important
+because otherwise there is no convenient, reliable way to tell if we've received all the data that we asked for. Now let's talk 
+about streaming, it's actually simpler than paginating but just as useful.
+
+##### Streaming
 
 Soon!
