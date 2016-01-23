@@ -1,7 +1,7 @@
 defmodule ElixirPlusReddit.Parser do
 
   @moduledoc """
-  A parser built with Poison for decoding Reddit's various return
+  A parser built on top of  Poison for decoding Reddit's various return
   structures.
   """
 
@@ -17,6 +17,10 @@ defmodule ElixirPlusReddit.Parser do
     "bearer #{resp.access_token}"
   end
 
+  def parse(resp, :trophies) do
+    Enum.map(resp.data.trophies, fn(trophy) -> trophy.data end)
+  end
+
   def parse(resp, :listing) do
     Map.update!(resp.data, :children, fn(children) ->
       Enum.map(children, fn(child) ->
@@ -24,6 +28,17 @@ defmodule ElixirPlusReddit.Parser do
       end)
     end)
   end
+
+  def parse(resp, :reply) do
+    errors = resp.json.errors
+    things = resp.json.data.things |> List.first |> Map.get(:data)
+    Map.put(things, :errors, errors)
+  end
+
+  def parse(resp, :no_data) do
+    resp
+  end
+
 
   def parse(resp, _) do
     resp
