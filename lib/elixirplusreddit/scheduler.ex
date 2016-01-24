@@ -28,7 +28,7 @@ defmodule ElixirPlusReddit.Scheduler do
 
   def init(config) do
     process_request(config)
-    schedule_request(250)
+    schedule_request(config[:interval])
     {:ok, config}
   end
 
