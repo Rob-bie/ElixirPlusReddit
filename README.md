@@ -148,13 +148,12 @@ iex(11)> response = capture.(:me)
 
 The anonymous function `capture` takes a tag and matches it against our mailbox, if it finds something within five seconds 
 it grabs it, otherwise we're left with a disappointing message. That's pretty much the gist of it, honestly. If you understand this
-you have the proper foundation for making neat stuff. Next we'll take a look at brief overview of EPR's most important bits
+you have the proper foundation for making neat stuff. Next we'll take a brief tour of EPR's most important bits
 and then finally put it to practice and write a (useless) bot!
 
-## A brief, non-comprehensive overview of EPR
+## A brief, non-comprehensive tour of EPR
 
-
-He're we'll take a look at some of EPR's different functionality and discuss certain implementation details. If you're following
+Here we'll take a look at some of EPR's different functionality and discuss certain implementation details. If you're following
 along I would suggest reconfiguring your iex session before hopping into the next part.
 
 ```elixir
@@ -216,7 +215,7 @@ talk about pagination and streaming now. Actually, you should experiment a bit f
 the upvote count and submission title. Type `h ElixirPlusReddit.API.User.top_submissions` in your shell to get started. Seriously, 
 moving on now.
 
-#### Pagination versus streaming
+#### Pagination and streaming
 
 
 ##### Pagination
@@ -226,7 +225,9 @@ manually pass around the after id but it is not necessary. Let's try paginating 
 what's happening.
 
 ```elixir
-iex(18)> {:ok, pid} = User.paginate_top_comments(self(), :comments, :hutsboR) # I'm hutsboR!
+iex(18)> alias ElixirPlusReddit.API.User
+nil
+iex(19)> {:ok, pid} = User.paginate_top_comments(self(), :comments, :hutsboR) # I'm hutsboR!
 {:ok, #PID<x.xx.x>}
 ```
 
@@ -241,7 +242,7 @@ by Reddit. If the resource you're fetching from has less items than the limit, i
 Generous right? Anyways, let's see what's in our mailbox.
 
 ```elixir
-iex(19)> response = capture.(:comments)
+iex(20)> response = capture.(:comments)
 [%{user_reports: [], banned_by: nil, link_id: "t3_xxxxxx", ...},
  %{user_reports: [], banned_by: nil, ...}, %{user_reports: [], ...}, %{...},
  ...]
@@ -253,29 +254,29 @@ what we referred to as `children` before. That's only the first 100 comments tho
 delivered to our mailbox by now. Let's just flush them out.
 
 ```elixir
-iex(20)> flush
+iex(21)> flush
 {:comments,
- [%{user_reports: [], banned_by: nil, link_id: "t3_2c4ka3", ...},
+ [%{user_reports: [], banned_by: nil, link_id: "t3_xxxxxx", ...},
   %{user_reports: [], banned_by: nil, ...}, %{user_reports: [], ...}, %{...},
   ...]}
 {:comments,
- [%{user_reports: [], banned_by: nil, link_id: "t3_2ulqbj", ...},
+ [%{user_reports: [], banned_by: nil, link_id: "t3_xxxxxx", ...},
   %{user_reports: [], banned_by: nil, ...}, %{user_reports: [], ...}, %{...},
   ...]}
 {:comments,
- [%{user_reports: [], banned_by: nil, link_id: "t3_2whi9u", ...},
+ [%{user_reports: [], banned_by: nil, link_id: "t3_xxxxxx", ...},
   %{user_reports: [], banned_by: nil, ...}, %{user_reports: [], ...}, %{...},
   ...]}
 {:comments,
- [%{user_reports: [], banned_by: nil, link_id: "t3_1r6b1t", ...},
+ [%{user_reports: [], banned_by: nil, link_id: "t3_xxxxxx", ...},
   %{user_reports: [], banned_by: nil, ...}, %{user_reports: [], ...}, %{...},
   ...]}
 {:comments,
- [%{user_reports: [], banned_by: nil, link_id: "t3_2ug3hx", ...},
+ [%{user_reports: [], banned_by: nil, link_id: "t3_xxxxxx", ...},
   %{user_reports: [], banned_by: nil, ...}, %{user_reports: [], ...}, %{...},
   ...]}
 {:comments,
- [%{user_reports: [], banned_by: nil, link_id: "t3_1u4hau", ...},
+ [%{user_reports: [], banned_by: nil, link_id: "t3_xxxxxx", ...},
   %{user_reports: [], banned_by: nil, ...}, %{user_reports: [], ...}, %{...},
   ...]}
 {:comments, :complete}
@@ -284,9 +285,47 @@ iex(20)> flush
 
 There's the rest of the comments. Wait, what's that at the bottom? That's actually the interesting bit. When a paginator
 is done paginating it sends one last dying message to let us know that is it has completed it's sole duty. This is important
-because otherwise there is no convenient, reliable way to tell if we've received all the data that we asked for. Now let's talk 
-about streaming, it's actually simpler than paginating but just as useful.
+because otherwise there is no convenient, reliable way to tell if we've received all the data that we've asked for. Now let's talk 
+about streaming, a simple but useful feature.
 
 ##### Streaming
+
+Unlike pagination, streaming is simply requesting the *same* data indefinitely on an interval. Remember the first example we did in
+introduction section where we got collected a little bit of data about ourselves by calling `Identity.self_data`? The response
+structure has a field called `has_mail` which lets us know if we have some form of mail. This includes username mentions, comment and submission replies, messages and so forth. Now what if we write a bot where it's critical to respond to mail and we need to
+periodically check for mail? Well let's just take care of that, luckily that's built in.
+
+```elixir
+iex(22)> Identity.stream_self_data(self(), :me, 30000)
+{:ok, #PID<x.xx.x>}
+```
+
+Notice the function name `stream_self_data`, some functions have stream implementations built in and
+are generally preceded by `stream`. The argument `30000` is how often in milliseconds that the request
+should be made. Do we have mail?
+
+```elixir
+iex(23)> capture.(:me).has_mail
+false
+```
+
+Nope, not this time. That's okay, we'll check again (*and again and again and again*) later. Another and probably the most common
+use case of streams is checking a subreddit for new comments that need attention. The `Subreddit` and `User`
+modules only have two functions for streaming comments and submissions and they fetch data with the `new` sort option. 
+In other words, there's no built in support for streaming `hot`, `top` or other sortings. I might add 
+built in support in the future but I figured that they have very limited uses unless you're streaming them on a large interval.
+As an example, let's say we need to check for new submissions to /r/Elixir.
+
+```elixir
+iex(24)> Subreddit.stream_submissions(self(), :elixir_submissions, :elixir, [limit: 10], 1000 * 60 * 10)
+{:ok, #PID<x.xx.x>}
+```
+
+Now, every 10 minutes we'll get the 10 `newest` submissions. It's important to understand that this doesn't know which submissions
+you've seen and as a consequence there is a chance you will see the same submissions. It is the programmer's responsibility to provide
+a way to handle duplicate submissions. As a rule of thumb, use a smaller limit and larger interval for relatively inactive subreddits and
+users. Pretty simple right? Next we'll take a quick peek at writing custom paginators and streams.
+
+##### Implementing custom paginators and streams
 
 Soon!
