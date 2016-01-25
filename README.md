@@ -290,7 +290,7 @@ about streaming, a simple but useful feature.
 
 ##### Streaming
 
-Unlike pagination, streaming is simply requesting the *same* data indefinitely on an interval. Remember the first example we did in
+Unlike pagination, streaming is simply requesting the *same* data indefinitely on an interval. Remember the first example we did in there
 introduction section where we got collected a little bit of data about ourselves by calling `Identity.self_data`? The response
 structure has a field called `has_mail` which lets us know if we have some form of mail. This includes username mentions, comment and submission replies, messages and so forth. Now what if we write a bot where it's critical to respond to mail and we need to
 periodically check for mail? Well let's just take care of that, luckily that's built in.
@@ -300,7 +300,7 @@ iex(22)> Identity.stream_self_data(self(), :me, 30000)
 {:ok, #PID<x.xx.x>}
 ```
 
-Notice the function name `stream_self_data`, some functions have stream implementations built in and
+Notice the function name `stream_self_data`, some functions have stream implementations built in and their names
 are generally preceded by `stream`. The argument `30000` is how often in milliseconds that the request
 should be made. Do we have mail?
 
@@ -322,10 +322,26 @@ iex(24)> Subreddit.stream_submissions(self(), :elixir_submissions, :elixir, [lim
 ```
 
 Now, every 10 minutes we'll get the 10 `newest` submissions. It's important to understand that this doesn't know which submissions
-you've seen and as a consequence there is a chance you will see the same submissions. It is the programmer's responsibility to provide
+we've seen and as a consequence there is a chance we will see the same submissions. It is the programmer's responsibility to provide
 a way to handle duplicate submissions. As a rule of thumb, use a smaller limit and larger interval for relatively inactive subreddits and
 users. Pretty simple right? Next we'll take a quick peek at writing custom paginators and streams.
 
 ##### Implementing custom paginators and streams
 
-Soon!
+Implementing your own paginators and streams isn't difficult. Let's pretend that we lived in a world where there was no way to
+automatically paginate a user's newest comments. We know that `User.new_comments` exists to get a single chunk of a user's comments.
+This alone is all we need to expand it into a paginator. Let's do that.
+
+```elixir
+iex(25)> Paginator.paginate(self(), :my_comments, {User, :new_comments}, [:hutsboR, [limit: 1000], 0])
+{:ok, #PID<x.xx.x>}
+```
+
+Let's break down the arguments. We already know that `self()` and `:my_comments` are the pid and tag. The next part is by far
+the most interesting bit. The tuple contains two elements, the first being the module name and the second being the function name.
+So it reads "The function `new_comments` from the module `User`". This is the resource that we will be paginating from. The next argument
+is well, `new_comments`'s arguments. `:hutsboR` is the username, `[limit: 1000]` is the list of options and `0` is.. Well, pretend you didn't
+see that. We'll discuss that later. Your paginator will only work if the function you're trying to turn into a paginator returns a `listing`.
+The function's return structure must have the `after` and `before` fields. You can always type `h ElixirPlusReddit.API. ...` in your shell
+to quickly and conveniently find out. I'm sure I don't need to tell you this but typically this would be wrapped in a function opposed to
+manually providing the username and other arguments. In fact, this is exactly how `User.paginate_new_comments` is implemented. Makes sense.
