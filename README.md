@@ -148,10 +148,10 @@ iex(11)> response = capture.(:me)
 
 The anonymous function `capture` takes a tag and matches it against our mailbox, if it finds something within five seconds 
 it grabs it, otherwise we're left with a disappointing message. That's pretty much the gist of it, honestly. If you understand this
-you have the proper foundation for making neat stuff. Next we'll take a brief tour of EPR's most important bits
+you already have the proper foundation for making neat stuff. Next we'll take a brief tour of EPR's most important bits
 and then finally put it to practice and write a (useless) bot!
 
-## A brief, non-comprehensive tour of EPR
+## A non-comprehensive tour of EPR
 
 Here we'll take a look at some of EPR's different functionality and discuss certain implementation details. If you're following
 along I would suggest reconfiguring your iex session before hopping into the next part.
@@ -232,7 +232,7 @@ iex(19)> {:ok, pid} = User.paginate_top_comments(self(), :comments, :hutsboR) # 
 ```
 
 The first thing you probably noticed is that when we invoke a paginator function a pid is returned with the `:ok` atom. This is
-because paginators are implemented as genservers, they chug away at your request in a separate process and send you data as it
+because paginators are implemented on top of genservers, they chug away at your request in a separate process and send you data as it
 becomes available. When there's no more data left to be acquired the genserver will gracefully shutdown and clean itself up. To
 see this in action repeatedly call `Process.is_alive?(pid)`.
 
@@ -333,15 +333,90 @@ automatically paginate a user's newest comments. We know that `User.new_comments
 This alone is all we need to expand it into a paginator. Let's do that.
 
 ```elixir
-iex(25)> Paginator.paginate(self(), :my_comments, {User, :new_comments}, [:hutsboR, [limit: 1000], 0])
+iex(25)> Paginator.paginate({User, :new_comments}, [self(), :my_comments, :hutsboR, [limit: 1000], 0])
 {:ok, #PID<x.xx.x>}
 ```
 
-Let's break down the arguments. We already know that `self()` and `:my_comments` are the pid and tag. The next part is by far
-the most interesting bit. The tuple contains two elements, the first being the module name and the second being the function name.
+Let's break down the arguments. The tuple contains two elements, the first being the module name and the second being the function name.
 So it reads "The function `new_comments` from the module `User`". This is the resource that we will be paginating from. The next argument
-is well, `new_comments`'s arguments. `:hutsboR` is the username, `[limit: 1000]` is the list of options and `0` is.. Well, pretend you didn't
+is well, `new_comments`'s arguments. We already know that `self` and `:my_comments` are the pid and the tag.
+`:hutsboR` is the username, `[limit: 1000]` is the list of options and `0` is.. Well, pretend you didn't
 see that. We'll discuss that later. Your paginator will only work if the function you're trying to turn into a paginator returns a `listing`.
 The function's return structure must have the `after` and `before` fields. You can always type `h ElixirPlusReddit.API. ...` in your shell
 to quickly and conveniently find out. I'm sure I don't need to tell you this but typically this would be wrapped in a function opposed to
 manually providing the username and other arguments. In fact, this is exactly how `User.paginate_new_comments` is implemented. Makes sense.
+
+Okay, okay, let's write a custom stream now. Let's imagine (*seriously, imagine, this is contrived*) that for some reason you need to receive a
+list of a user's trophies every so often. As we did with our paginator, we can build this on top of the existing API function `Identity.trophies`. This will look quite similar to our paginator, take a look.
+
+```elixir
+iex(26)> Scheduler.schedule({Identity, :trophies}, [self(), :my_comments, 0], 10000)
+{:ok, #PID<x.xx.x>}
+```
+
+Not too different, no? Again, `Identity` is the module and `:trophies` is the function. We know `self` is our pid and `:my_comments` is the tag
+we chose. Again, that weird `0` which we will ignore. Like the other streams we wrote we need to provide a millisecond interval that the function should be invoked on, that's our `10000` argument, as expected. Notice the module name, `Scheduler`. Streams are built on top of a generic
+scheduling implementation that simply issues API requests on an interval, no magic, no internal state, nothing. Moving on, let's talk about
+the `0` argument.
+
+
+#### The *priority* queue
+
+I mentioned the request queue way back in the introduction but what I *forgot* to mention is that it's actually a priority queue. What does
+that mean, though? It means that you can force important requests to be served immediately while other requests scoff at you for allowing them
+to be put on the back burner. So, how do we specify a priority? The `0`s that I buttered you up with in the previous section is the requests' priorities and the default priority that EPR uses for all requests. The priority is not required, hence why we have never specified it outside of last section. (Like I said, I had to butter you up... and I needed a smooth seque.) The last argument of all API requests is an optionial priority.  Requests with the same priority are taken care of in the order that they are placed in the queue. 
+Valid priorities are the values `-20` through `20`, where the **lower the value the higher priority**. ... No, you're reading that correctly. This
+convention is inherited from okeuday's [pqueue implementation](https://github.com/okeuday/pqueue) and is used in many other pqueue
+implementations. Why? I don't really know. This concept a little more difficult to illustrate than others but is possible with paginators.
+Time to get to work, I hope you're fast.
+
+```elixir
+iex(27)> higher_priority = -1
+-1
+iex(28)> Subreddit.paginate_comments(self(), :pri_demo_one, :learnprogramming)
+{:ok, #PID<x.xx.x>}
+iex(29)> flush
+{:pri_demo_one,
+ [%{stickied: false, 
+    from_id: nil,
+    permalink: "...", ...},
+    ...]}
+:ok
+iex(30)> Subreddit.paginate_comments(self(), :pri_demo_two, :programming, higher_priority) # Wait a while after this...
+{:ok, #PID<x.xx.x>}
+iex(31)> flush # After a little while...
+{:pri_demo_one,
+ [%{stickied: false, 
+    from_id: nil,
+    permalink: "...", ...},
+    ...]}
+{:pri_demo_two,
+ [%{stickied: false, 
+    from_id: nil,
+    permalink: "...", ...},
+    ...]}
+{:pri_demo_two,
+ [%{stickied: false, 
+    from_id: nil,
+    permalink: "...", ...},
+    ...]}
+.
+.
+.
+{:pri_demo_two, :complete}
+{:pri_demo_one,
+ [%{stickied: false, 
+    from_id: nil,
+    permalink: "...", ...},
+    ...]}
+.
+.
+.
+{:pri_demo_one, :complete}
+```
+
+Like I said, a little difficult to illustrate and the output is a little messy but as you can see that we queued up `:pri_demo_one` first but
+because `:pri_demo_two` has a higher priority it finished first. Often times including a priority isn't important but one example of when it's
+useful is streaming on a short interval and you need to reply to a comment or submission immediately. When it becomes necessary you will probably
+recognize it quickly, so know don't forget that it exists! We're getting close to the end, let's continue!
+
