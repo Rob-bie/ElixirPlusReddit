@@ -382,7 +382,7 @@ iex(29)> flush
     permalink: "...", ...},
     ...]}
 :ok
-iex(30)> Subreddit.paginate_comments(self(), :pri_demo_two, :programming, higher_priority) # Wait a while after this...
+iex(30)> Subreddit.paginate_comments(self(), :pri_demo_two, :programming, higher_priority)
 {:ok, #PID<x.xx.x>}
 iex(31)> flush # After a little while...
 {:pri_demo_one,
@@ -413,6 +413,7 @@ iex(31)> flush # After a little while...
 .
 .
 {:pri_demo_one, :complete}
+:ok
 ```
 
 Like I said, a little difficult to illustrate and the output is a little messy but as you can see that we queued up `:pri_demo_one` first but
