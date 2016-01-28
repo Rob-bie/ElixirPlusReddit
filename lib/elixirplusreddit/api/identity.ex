@@ -158,11 +158,11 @@ defmodule ElixirPlusReddit.API.Identity do
   """
 
   def stream_self_data(from, tag, interval) do
-    Scheduler.schedule(from, tag, {@identity, :self_data}, [@default_priority], interval)
+    Scheduler.schedule({@identity, :self_data}, [from, tag, @default_priority], interval)
   end
 
   def stream_self_data(from, tag, priority, interval) do
-    Scheduler.schedule(from, tag, {@identity, :self_data}, [priority], interval)
+    Scheduler.schedule({@identity, :self_data}, [from, tag, priority], interval)
   end
 
 end

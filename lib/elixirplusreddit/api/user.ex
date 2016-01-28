@@ -730,23 +730,23 @@ defmodule ElixirPlusReddit.API.User do
 
   ### Other
 
-  Refer to `User.comments` documentation for other parameter, option and field information.
+  Refer to `User.new_comments` documentation for other parameter, option and field information.
   """
 
   def stream_comments(from, tag, username, interval) do
-    Scheduler.schedule(from, tag, {@user, :comments}, [username, [], @default_priority], interval)
+    Scheduler.schedule({@user, :new_comments}, [from, tag, username, [], @default_priority], interval)
   end
 
   def stream_comments(from, tag, username, options, interval) when is_list(options) do
-    Scheduler.schedule(from, tag, {@user, :comments}, [username, options, @default_priority], interval)
+    Scheduler.schedule({@user, :new_comments}, [from, tag, username, options, @default_priority], interval)
   end
 
   def stream_comments(from, tag, username, priority, interval) do
-    Scheduler.schedule(from, tag, {@user, :comments}, [username, [] , priority], interval)
+    Scheduler.schedule({@user, :new_comments}, [from, tag, username, [] , priority], interval)
   end
 
   def stream_comments(from, tag, username, options, priority, interval) do
-    Scheduler.schedule(from, tag, {@user, :comments}, [username, options, priority], interval)
+    Scheduler.schedule({@user, :new_comments}, [from, tag, username, options, priority], interval)
   end
 
   @doc """
@@ -762,19 +762,19 @@ defmodule ElixirPlusReddit.API.User do
   """
 
   def stream_submissions(from, tag, username, interval) do
-    Scheduler.schedule(from, tag, {@user, :submissions}, [username, [], @default_priority], interval)
+    Scheduler.schedule({@user, :submissions}, [from, tag, username, [], @default_priority], interval)
   end
 
   def stream_submissions(from, tag, username, options, interval) when is_list(options) do
-    Scheduler.schedule(from, tag, {@user, :submissions}, [username, options, @default_priority], interval)
+    Scheduler.schedule({@user, :submissions}, [from, tag, username, options, @default_priority], interval)
   end
 
   def stream_submissions(from, tag, username, priority, interval) do
-    Scheduler.schedule(from, tag, {@user, :submissions}, [username, [] , priority], interval)
+    Scheduler.schedule({@user, :submissions}, [from, tag, username, [] , priority], interval)
   end
 
   def stream_submissions(from, tag, username, options, priority, interval) do
-    Scheduler.schedule(from, tag, {@user, :submissions}, [username, options, priority], interval)
+    Scheduler.schedule({@user, :submissions}, [from, tag, username, options, priority], interval)
   end
 
   @doc """
@@ -793,19 +793,19 @@ defmodule ElixirPlusReddit.API.User do
   """
 
   def paginate_hot_comments(from, tag, username) do
-    Paginator.paginate(from, tag, {@user, :hot_comments}, [username, [limit: 1000], @default_priority])
+    Paginator.paginate({@user, :hot_comments}, [from, tag, username, [limit: 1000], @default_priority])
   end
 
   def paginate_hot_comments(from, tag, username, options) when is_list(options) do
-    Paginator.paginate(from, tag, {@user, :hot_comments}, [username, put_limit(options), @default_priority])
+    Paginator.paginate({@user, :hot_comments}, [from, tag, username, put_limit(options), @default_priority])
   end
 
   def paginate_hot_comments(from, tag, username, priority) do
-    Paginator.paginate(from, tag, {@user, :hot_comments}, [username, [limit: 1000], priority])
+    Paginator.paginate({@user, :hot_comments}, [from, tag, username, [limit: 1000], priority])
   end
 
   def paginate_hot_comments(from, tag, username, options, priority) do
-    Paginator.paginate(from, tag, {@user, :hot_comments}, [username, put_limit(options), priority])
+    Paginator.paginate({@user, :hot_comments}, [from, tag, username, put_limit(options), priority])
   end
 
   @doc """
@@ -823,19 +823,19 @@ defmodule ElixirPlusReddit.API.User do
   """
 
   def paginate_new_comments(from, tag, username) do
-    Paginator.paginate(from, tag, {@user, :new_comments}, [username, [limit: 1000], @default_priority])
+    Paginator.paginate({@user, :new_comments}, [from, tag, username, [limit: 1000], @default_priority])
   end
 
   def paginate_new_comments(from, tag, username, options) when is_list(options) do
-    Paginator.paginate(from, tag, {@user, :new_comments}, [username, put_limit(options), @default_priority])
+    Paginator.paginate({@user, :new_comments}, [from, tag, username, put_limit(options), @default_priority])
   end
 
   def paginate_new_comments(from, tag, username, priority) do
-    Paginator.paginate(from, tag, {@user, :new_comments}, [username, [limit: 1000], priority])
+    Paginator.paginate({@user, :new_comments}, [from, tag, username, [limit: 1000], priority])
   end
 
   def paginate_new_comments(from, tag, username, options, priority) do
-    Paginator.paginate(from, tag, {@user, :new_comments}, [username, put_limit(options), priority])
+    Paginator.paginate({@user, :new_comments}, [from, tag, username, put_limit(options), priority])
   end
 
   @doc """
@@ -853,19 +853,19 @@ defmodule ElixirPlusReddit.API.User do
   """
 
   def paginate_top_comments(from, tag, username) do
-    Paginator.paginate(from, tag, {@user, :top_comments}, [username, [limit: 1000], @default_priority])
+    Paginator.paginate({@user, :top_comments}, [from, tag, username, [limit: 1000], @default_priority])
   end
 
   def paginate_top_comments(from, tag, username, options) when is_list(options) do
-    Paginator.paginate(from, tag, {@user, :top_comments}, [username, put_limit(options), @default_priority])
+    Paginator.paginate({@user, :top_comments}, [from, tag, username, put_limit(options), @default_priority])
   end
 
   def paginate_top_comments(from, tag, username, priority) do
-    Paginator.paginate(from, tag, {@user, :top_comments}, [username, [limit: 1000], priority])
+    Paginator.paginate({@user, :top_comments}, [from, tag, username, [limit: 1000], priority])
   end
 
   def paginate_top_comments(from, tag, username, options, priority) do
-    Paginator.paginate(from, tag, {@user, :top_comments}, [username, put_limit(options), priority])
+    Paginator.paginate({@user, :top_comments}, [from, tag, username, put_limit(options), priority])
   end
 
   @doc """
@@ -883,19 +883,19 @@ defmodule ElixirPlusReddit.API.User do
   """
 
   def paginate_controversial_comments(from, tag, username) do
-    Paginator.paginate(from, tag, {@user, :controversial_comments}, [username, [limit: 1000], @default_priority])
+    Paginator.paginate({@user, :controversial_comments}, [from, tag, username, [limit: 1000], @default_priority])
   end
 
   def paginate_controversial_comments(from, tag, username, options) when is_list(options) do
-    Paginator.paginate(from, tag, {@user, :controversial_comments}, [username, put_limit(options), @default_priority])
+    Paginator.paginate({@user, :controversial_comments}, [from, tag, username, put_limit(options), @default_priority])
   end
 
   def paginate_controversial_comments(from, tag, username, priority) do
-    Paginator.paginate(from, tag, {@user, :controversial_comments}, [username, [limit: 1000], priority])
+    Paginator.paginate({@user, :controversial_comments}, [from, tag, username, [limit: 1000], priority])
   end
 
   def paginate_controversial_comments(from, tag, username, options, priority) do
-    Paginator.paginate(from, tag, {@user, :controversial_comments}, [username, put_limit(options), priority])
+    Paginator.paginate({@user, :controversial_comments}, [from, tag, username, put_limit(options), priority])
   end
 
   @doc """
@@ -913,19 +913,19 @@ defmodule ElixirPlusReddit.API.User do
   """
 
   def paginate_hot_submissions(from, tag, username) do
-    Paginator.paginate(from, tag, {@user, :hot_submissions}, [username, [limit: 1000], @default_priority])
+    Paginator.paginate({@user, :hot_submissions}, [from, tag, username, [limit: 1000], @default_priority])
   end
 
   def paginate_hot_submissions(from, tag, username, options) when is_list(options) do
-    Paginator.paginate(from, tag, {@user, :hot_submissions}, [username, put_limit(options), @default_priority])
+    Paginator.paginate({@user, :hot_submissions}, [from, tag, username, put_limit(options), @default_priority])
   end
 
   def paginate_hot_submissions(from, tag, username, priority) do
-    Paginator.paginate(from, tag, {@user, :hot_submissions}, [username, [limit: 1000], priority])
+    Paginator.paginate({@user, :hot_submissions}, [from, tag, username, [limit: 1000], priority])
   end
 
   def paginate_hot_submissions(from, tag, username, options, priority) do
-    Paginator.paginate(from, tag, {@user, :hot_submissions}, [username, put_limit(options), priority])
+    Paginator.paginate({@user, :hot_submissions}, [from, tag, username, put_limit(options), priority])
   end
 
   @doc """
@@ -943,19 +943,19 @@ defmodule ElixirPlusReddit.API.User do
   """
 
   def paginate_new_submissions(from, tag, username) do
-    Paginator.paginate(from, tag, {@user, :new_submissions}, [username, [limit: 1000], @default_priority])
+    Paginator.paginate({@user, :new_submissions}, [from, tag, username, [limit: 1000], @default_priority])
   end
 
   def paginate_new_submissions(from, tag, username, options) when is_list(options) do
-    Paginator.paginate(from, tag, {@user, :new_submissions}, [username, put_limit(options), @default_priority])
+    Paginator.paginate({@user, :new_submissions}, [from, tag, username, put_limit(options), @default_priority])
   end
 
   def paginate_new_submissions(from, tag, username, priority) do
-    Paginator.paginate(from, tag, {@user, :new_submissions}, [username, [limit: 1000], priority])
+    Paginator.paginate({@user, :new_submissions}, [from, tag, username, [limit: 1000], priority])
   end
 
   def paginate_new_submissions(from, tag, username, options, priority) do
-    Paginator.paginate(from, tag, {@user, :new_submissions}, [username, put_limit(options), priority])
+    Paginator.paginate({@user, :new_submissions}, [from, tag, username, put_limit(options), priority])
   end
 
   @doc """
@@ -973,19 +973,19 @@ defmodule ElixirPlusReddit.API.User do
   """
 
   def paginate_top_submissions(from, tag, username) do
-    Paginator.paginate(from, tag, {@user, :top_submissions}, [username, [limit: 1000], @default_priority])
+    Paginator.paginate({@user, :top_submissions}, [from, tag, username, [limit: 1000], @default_priority])
   end
 
   def paginate_top_submissions(from, tag, username, options) when is_list(options) do
-    Paginator.paginate(from, tag, {@user, :top_submissions}, [username, put_limit(options), @default_priority])
+    Paginator.paginate({@user, :top_submissions}, [from, tag, username, put_limit(options), @default_priority])
   end
 
   def paginate_top_submissions(from, tag, username, priority) do
-    Paginator.paginate(from, tag, {@user, :top_submissions}, [username, [limit: 1000], priority])
+    Paginator.paginate({@user, :top_submissions}, [from, tag, username, [limit: 1000], priority])
   end
 
   def paginate_top_submissions(from, tag, username, options, priority) do
-    Paginator.paginate(from, tag, {@user, :top_submissions}, [username, put_limit(options), priority])
+    Paginator.paginate({@user, :top_submissions}, [from, tag, username, put_limit(options), priority])
   end
 
   @doc """
@@ -1003,19 +1003,19 @@ defmodule ElixirPlusReddit.API.User do
   """
 
   def paginate_controversial_submissions(from, tag, username) do
-    Paginator.paginate(from, tag, {@user, :top_submissions}, [username, [limit: 1000], @default_priority])
+    Paginator.paginate({@user, :top_submissions}, [from, tag, username, [limit: 1000], @default_priority])
   end
 
   def paginate_controversial_submissions(from, tag, username, options) when is_list(options) do
-    Paginator.paginate(from, tag, {@user, :top_submissions}, [username, put_limit(options), @default_priority])
+    Paginator.paginate({@user, :top_submissions}, [from, tag, username, put_limit(options), @default_priority])
   end
 
   def paginate_controversial_submissions(from, tag, username, priority) do
-    Paginator.paginate(from, tag, {@user, :top_submissions}, [username, [limit: 1000], priority])
+    Paginator.paginate({@user, :top_submissions}, [from, tag, username, [limit: 1000], priority])
   end
 
   def paginate_controversial_submissions(from, tag, username, options, priority) do
-    Paginator.paginate(from, tag, {@user, :top_submissions}, [username, put_limit(options), priority])
+    Paginator.paginate({@user, :top_submissions}, [from, tag, username, put_limit(options), priority])
   end
 
   defp put_limit(options) do
