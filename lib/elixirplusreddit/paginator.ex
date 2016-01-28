@@ -7,16 +7,17 @@ defmodule ElixirPlusReddit.Paginator do
 
   @paginator __MODULE__
 
-  def paginate(from, tag, {module, function}, arguments) do
-    start_link(from, tag, {module, function}, arguments)
+  def paginate({module, function}, arguments) do
+    start_link({module, function}, arguments)
   end
 
-  def start_link(from, tag, {module, function}, arguments) do
-    config = [from: from,
-              tag: tag,
-              module: module,
-              function: function,
-              arguments: arguments]
+  def start_link({module, function}, [from|arguments]) do
+    config = [
+       from: from,    
+       module: module,
+       function: function,
+       arguments: arguments
+    ]
 
     GenServer.start_link(@paginator, config, [])
   end
@@ -31,14 +32,14 @@ defmodule ElixirPlusReddit.Paginator do
     case resp.after do
       nil ->
         send(config[:from], {tag, :complete})
-        send(self, :stop)
+        send(self(), :stop)
         {:noreply, config}
       id  ->
         new_config = update_limit(config)
         cond do
           get_limit(new_config) <= 0 ->
             send(config[:from], {tag, :complete})
-            send(self, :stop)
+            send(self(), :stop)
             {:noreply, new_config}
           true ->
             new_config = update_id(new_config, id)
@@ -56,12 +57,8 @@ defmodule ElixirPlusReddit.Paginator do
     :ok
   end
 
-  defp process_request([from: _, tag: t, module: m, function: x, arguments: a], server) do
-    arguments = a
-    |> Enum.reduce([t, server], fn(arg, acc) -> [arg|acc] end)
-    |> Enum.reverse
-
-    apply(m, x, arguments)
+  defp process_request([from: _from, module: m, function: x, arguments: a], server) do
+    apply(m, x, [server|a])
   end
 
   defp get_limit(config) do

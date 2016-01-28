@@ -7,21 +7,21 @@ defmodule ElixirPlusReddit.Scheduler do
 
   @scheduler __MODULE__
 
-  def schedule(from, tag, {module, function}, arguments, interval) do
-    start_link(from, tag, {module, function}, arguments, interval)
+  def schedule({module, function}, arguments, interval) do
+    start_link({module, function}, arguments, interval)
   end
 
-  def schedule(from, tag, {module, function}, interval) do
-    start_link(from, tag, {module, function}, [], interval)
+  def schedule({module, function}, interval) do
+    start_link({module, function}, [], interval)
   end
 
-  def start_link(from, tag, {module, function}, arguments, interval) do
-    config = [from: from,
-              tag: tag,
-              module: module,
-              function: function,
-              arguments: arguments,
-              interval: interval]
+  def start_link({module, function}, arguments, interval) do
+    config = [
+      module: module,
+      function: function,
+      arguments: arguments,
+      interval: interval
+    ]
 
     GenServer.start_link(@scheduler, config, [])
   end
@@ -38,12 +38,8 @@ defmodule ElixirPlusReddit.Scheduler do
     {:noreply, config}
   end
 
-  defp process_request([from: f, tag: t, module: m, function: x, arguments: a, interval: _]) do
-    arguments = a
-    |> Enum.reduce([t, f], fn(arg, acc) -> [arg|acc] end)
-    |> Enum.reverse
-
-    apply(m, x, arguments)
+  defp process_request([module: m, function: x, arguments: a, interval: _]) do
+    apply(m, x, a)
   end
 
   defp schedule_request(interval) do
