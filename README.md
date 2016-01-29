@@ -377,38 +377,24 @@ iex(28)> Subreddit.paginate_comments(self(), :pri_demo_one, :learnprogramming)
 {:ok, #PID<x.xx.x>}
 iex(29)> flush
 {:pri_demo_one,
- [%{stickied: false, 
-    from_id: nil,
-    permalink: "...", ...},
+ [%{stickied: false, from_id: nil, permalink: "...", ...},
     ...]}
 :ok
 iex(30)> Subreddit.paginate_comments(self(), :pri_demo_two, :programming, higher_priority)
 {:ok, #PID<x.xx.x>}
 iex(31)> flush # After a little while...
 {:pri_demo_one,
- [%{stickied: false, 
-    from_id: nil,
-    permalink: "...", ...},
-    ...]}
+ [%{stickied: false,  from_id: nil, permalink: "...", ...}, ...]}
 {:pri_demo_two,
- [%{stickied: false, 
-    from_id: nil,
-    permalink: "...", ...},
-    ...]}
+ [%{stickied: false, from_id: nil, permalink: "...", ...}, ...]}
 {:pri_demo_two,
- [%{stickied: false, 
-    from_id: nil,
-    permalink: "...", ...},
-    ...]}
+ [%{stickied: false, from_id: nil, permalink: "...", ...}, ...]}
 .
 .
 .
 {:pri_demo_two, :complete}
 {:pri_demo_one,
- [%{stickied: false, 
-    from_id: nil,
-    permalink: "...", ...},
-    ...]}
+ [%{stickied: false, from_id: nil, permalink: "...", ...}, ...]}
 .
 .
 .
@@ -421,3 +407,4 @@ because `:pri_demo_two` has a higher priority it finished first. Often times inc
 useful is streaming on a short interval and you need to reply to a comment or submission immediately. When it becomes necessary you will probably
 recognize it quickly, so know don't forget that it exists! We're getting close to the end, let's continue!
 
+#### Replies, submissions and messages
