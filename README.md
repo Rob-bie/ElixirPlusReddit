@@ -377,8 +377,7 @@ iex(28)> Subreddit.paginate_comments(self(), :pri_demo_one, :learnprogramming)
 {:ok, #PID<x.xx.x>}
 iex(29)> flush
 {:pri_demo_one,
- [%{stickied: false, from_id: nil, permalink: "...", ...},
-    ...]}
+ [%{stickied: false, from_id: nil, permalink: "...", ...}, ...]}
 :ok
 iex(30)> Subreddit.paginate_comments(self(), :pri_demo_two, :programming, higher_priority)
 {:ok, #PID<x.xx.x>}
