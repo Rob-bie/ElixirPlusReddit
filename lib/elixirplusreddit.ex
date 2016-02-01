@@ -1,6 +1,7 @@
 defmodule ElixirPlusReddit do
   use Application
 
+  alias ElixirPlusReddit.RequestQueue
   alias ElixirPlusReddit.RequestServer
   alias ElixirPlusReddit.TokenServer
 
@@ -8,6 +9,7 @@ defmodule ElixirPlusReddit do
     import Supervisor.Spec, warn: false
 
     children = [
+      worker(RequestQueue, []),
       worker(RequestServer, []),
       worker(TokenServer, [])
     ]

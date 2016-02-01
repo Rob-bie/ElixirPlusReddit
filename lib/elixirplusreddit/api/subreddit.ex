@@ -4,7 +4,7 @@ defmodule ElixirPlusReddit.API.Subreddit do
   An interface for getting subreddit information.
   """
 
-  alias ElixirPlusReddit.RequestServer
+  alias ElixirPlusReddit.RequestQueue
   alias ElixirPlusReddit.RequestBuilder
   alias ElixirPlusReddit.Paginator
   alias ElixirPlusReddit.Scheduler
@@ -13,6 +13,36 @@ defmodule ElixirPlusReddit.API.Subreddit do
   @subreddit_base  "https://oauth.reddit.com/r"
   @default_priority 0
 
+  defdelegate submit_url(from,
+                         tag,
+                         subreddit,
+                         title,
+                         url,
+                         send_replies?), to: ElixirPlusReddit.API.Post
+  
+  defdelegate submit_url(from,
+                         tag,
+                         subreddit,
+                         title,
+                         url,
+                         send_replies?,
+                         priority), to: ElixirPlusReddit.API.Post
+
+  defdelegate submit_text(from,
+                          tag,
+                          subreddit,
+                          title,
+                          text,
+                          send_replies?), to: ElixirPlusReddit.API.Post
+
+  defdelegate submit_text(from,
+                          tag,
+                          subreddit,
+                          title,
+                          text,
+                          send_replies?,
+                          priority), to: ElixirPlusReddit.API.Post
+  
   @doc """
   Get a subreddit's `hot` submissions.
 
@@ -929,7 +959,7 @@ defmodule ElixirPlusReddit.API.Subreddit do
   defp listing(from, tag, subreddit, options, endpoint, priority) do
     url = "#{@subreddit_base}/#{subreddit}/#{endpoint}"
     request_data = RequestBuilder.format_get(from, tag, url, options, :listing, priority)
-    RequestServer.enqueue_request(request_data)
+    RequestQueue.enqueue_request(request_data)
   end
 
 end

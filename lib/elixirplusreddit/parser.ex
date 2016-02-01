@@ -35,10 +35,17 @@ defmodule ElixirPlusReddit.Parser do
     Map.put(things, :errors, errors)
   end
 
+  def parse(resp, :submission) do
+    resp.json.data
+  end
+
+  def parse(resp, :compose) do
+    resp.json
+  end
+
   def parse(resp, :no_data) do
     resp
   end
-
 
   def parse(resp, _) do
     resp

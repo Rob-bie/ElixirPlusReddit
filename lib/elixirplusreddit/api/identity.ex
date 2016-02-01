@@ -4,7 +4,7 @@ defmodule ElixirPlusReddit.API.Identity do
   An interface for getting information about the authenticated user.
   """
 
-  alias ElixirPlusReddit.RequestServer
+  alias ElixirPlusReddit.RequestQueue
   alias ElixirPlusReddit.RequestBuilder
   alias ElixirPlusReddit.Scheduler
 
@@ -45,7 +45,7 @@ defmodule ElixirPlusReddit.API.Identity do
 
   def self_data(from, tag, priority \\ @default_priority) do
     request_data = RequestBuilder.format_get(from, tag, @identity_base, :no_data, priority)
-    RequestServer.enqueue_request(request_data)
+    RequestQueue.enqueue_request(request_data)
   end
 
   @doc """
@@ -115,7 +115,7 @@ defmodule ElixirPlusReddit.API.Identity do
   def prefs(from, tag, priority \\ @default_priority) do
     url = "#{@identity_base}/prefs"
     request_data = RequestBuilder.format_get(from, tag, url, :no_data, priority)
-    RequestServer.enqueue_request(request_data)
+    RequestQueue.enqueue_request(request_data)
   end
 
   @doc """
@@ -141,7 +141,7 @@ defmodule ElixirPlusReddit.API.Identity do
   def trophies(from, tag, priority \\ @default_priority) do
     url = "#{@identity_base}/trophies"
     request_data = RequestBuilder.format_get(from, tag, url, :trophies, priority)
-    RequestServer.enqueue_request(request_data)
+    RequestQueue.enqueue_request(request_data)
   end
 
   @doc """

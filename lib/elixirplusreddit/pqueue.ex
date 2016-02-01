@@ -21,7 +21,7 @@ defmodule ElixirPlusReddit.PQueue do
   end
 
   @doc """
-  Return the next request in the pqueue.
+  Return the next request in the pqueue and the new pqueue.
   """
 
   def dequeue(pqueue) do

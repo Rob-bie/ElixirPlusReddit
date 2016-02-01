@@ -8,6 +8,7 @@ defmodule ElixirPlusReddit.API.Authentication do
 
   alias ElixirPlusReddit.Config
   alias ElixirPlusReddit.Request
+  alias ElixirPlusReddit.Parser
 
   @token_endpoint "https://www.reddit.com/api/v1/access_token"
 
@@ -20,8 +21,15 @@ defmodule ElixirPlusReddit.API.Authentication do
     creds = Config.credentials
     body = [grant_type: "password", username: creds[:username], password: creds[:password]]
     basic_auth = [basic_auth: {creds[:client_id], creds[:client_secret]}]
+    retry_until_success(@token_endpoint, body, basic_auth)
+  end
 
-    Request.request_token(@token_endpoint, body, basic_auth)
+  defp retry_until_success(endpoint, body, basic_auth) do
+    {resp, strategy} = Request.request_token(@token_endpoint, body, basic_auth)
+    case resp.status_code do
+      503 -> retry_until_success(endpoint, body, basic_auth)
+      _   -> Parser.parse(resp, strategy)
+    end
   end
 
 

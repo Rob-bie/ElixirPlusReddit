@@ -2,59 +2,38 @@ defmodule ElixirPlusReddit.RequestServer do
   use GenServer
 
   @moduledoc """
-  Distributes responses, handles rate limiting and implements priority based
-  request issuing.
-
-  ### Details
-
-  A consequence of requests being statically rate limited is that
-  you must provide a tag and pid with each request. This enables a way to
-  deliver responses when they are available and a convenient way to pattern match
-  on them. Requests are also accompanied by a priority, priorties create an
-  easy way to ensure that important requests are issued before others of lesser
-  importance.
+  Rate limits requests and distributes responses.
   """
 
   alias ElixirPlusReddit.Request
-  alias ElixirPlusReddit.PQueue
+  alias ElixirPlusReddit.Parser
+  alias ElixirPlusReddit.RequestQueue
 
   @requestserver       __MODULE__
   @request_interval    1000
   @no_request_interval 500
 
-  @doc """
-  Start the request server.
-  """
-
   def start_link do
     GenServer.start_link(@requestserver, [], name: @requestserver)
   end
 
-  def enqueue_request(request_data) do
-    GenServer.cast(@requestserver, {:enqueue_request, request_data})
-  end
-
   def init(_) do
     schedule_request(@no_request_interval)
-    {:ok, PQueue.new}
+    {:ok, :no_state}
   end
 
-  def handle_cast({:enqueue_request, %{priority: p} = request_data}, request_queue) do
-    {:noreply, PQueue.enqueue(request_queue, request_data, p)}
-  end
-
-  def handle_info(:next_request, request_queue) do
-    case PQueue.is_empty?(request_queue) do
+  def handle_info(:next_request, :no_state) do
+    case RequestQueue.is_empty? do
       true  ->
         schedule_request(@no_request_interval)
-        {:noreply, request_queue}
+        {:noreply, :no_state}
       false ->
-        {{:value, request_data}, request_queue} = PQueue.dequeue(request_queue)
-        %{from: from, tag: tag} = request_data
-        resp = issue_request(request_data)
+        %{from: from, tag: tag} = request_data = RequestQueue.peek_request
+        resp = retry_until_success(request_data)
+        RequestQueue.dequeue_request
         send_response(from, {tag, resp})
         schedule_request(@request_interval)
-        {:noreply, request_queue}
+        {:noreply, :no_state}
     end
   end
 
@@ -75,6 +54,14 @@ defmodule ElixirPlusReddit.RequestServer do
   defp issue_request(%{method: :get} = request_data) do
     %{url: url, parse_strategy: strategy} = request_data
     Request.request(:get, url, strategy)
+  end
+
+  defp retry_until_success(request_data) do
+    {resp, parse_strategy} = issue_request(request_data)
+    case resp.status_code do
+      503 -> retry_until_success(request_data)
+      _   -> resp |> Parser.parse(parse_strategy)
+    end
   end
 
   defp schedule_request(interval) do

@@ -5,13 +5,37 @@ defmodule ElixirPlusReddit.API.Inbox do
   inbox related actions.
   """
 
-  alias ElixirPlusReddit.RequestServer
+  alias ElixirPlusReddit.RequestQueue
   alias ElixirPlusReddit.RequestBuilder
   alias ElixirPlusReddit.Paginator
 
   @message_base       "https://oauth.reddit.com/message"
   @mark_read_endpoint "https://oauth.reddit.com/api/read_message"
   @default_priority    0
+
+  defdelegate compose(from,
+                      tag,
+                      to,
+                      subject,
+                      text), to: ElixirPlusReddit.API.Post
+
+  defdelegate compose(from,
+                      tag,
+                      to,
+                      subject,
+                      text,
+                      priority), to: ElixirPlusReddit.API.Post
+
+  defdelegate reply(from,
+                    tag,
+                    id,
+                    text), to: ElixirPlusReddit.API.Post
+
+  defdelegate reply(from,
+                    tag,
+                    id,
+                    text,
+                    priority), to: ElixirPlusReddit.API.Post
 
   @doc """
   Mark a message or list a messages as read.
@@ -29,7 +53,7 @@ defmodule ElixirPlusReddit.API.Inbox do
 
   def mark_read(from, tag, id, priority \\ @default_priority) do
     request_data = RequestBuilder.format_post(from, tag, @mark_read_endpoint, [id: id], :ok, priority)
-    RequestServer.enqueue_request(request_data)
+    RequestQueue.enqueue_request(request_data)
   end
 
   @doc """
@@ -107,29 +131,29 @@ defmodule ElixirPlusReddit.API.Inbox do
 
   ### Fields
 
-  after
-  before
-  modhash
-  children:
-      author
-      body
-      body_html
-      context
-      created
-      created_utc
-      dest
-      distinguished
-      first_message
-      first_message_name
-      id
-      likes
-      link_title
-      name
-      new
-      parent_id
-      replies
-      subject
-      subreddit
+      after
+      before
+      modhash
+      children:
+          author
+          body
+          body_html
+          context
+          created
+          created_utc
+          dest
+          distinguished
+          first_message
+          first_message_name
+          id
+          likes
+          link_title
+          name
+          new
+          parent_id
+          replies
+          subject
+          subreddit
   """
 
   def unread(from, tag) do
@@ -167,29 +191,29 @@ defmodule ElixirPlusReddit.API.Inbox do
 
   ### Fields
 
-  after
-  before
-  modhash
-  children:
-      author
-      body
-      body_html
-      context
-      created
-      created_utc
-      dest
-      distinguished
-      first_message
-      first_message_name
-      id
-      likes
-      link_title
-      name
-      new
-      parent_id
-      replies
-      subject
-      subreddit
+      after
+      before
+      modhash
+      children:
+          author
+          body
+          body_html
+          context
+          created
+          created_utc
+          dest
+          distinguished
+          first_message
+          first_message_name
+          id
+          likes
+          link_titleb
+          name
+          new
+          parent_id
+          replies
+          subject
+          subreddit
   """
 
   def sent(from, tag) do
@@ -207,7 +231,7 @@ defmodule ElixirPlusReddit.API.Inbox do
   defp listing(from, tag, options, endpoint, priority) do
     url = "#{@message_base}/#{endpoint}"
     request_data = RequestBuilder.format_get(from, tag, url, options, :listing, priority)
-    RequestServer.enqueue_request(request_data)
+    RequestQueue.enqueue_request(request_data)
   end
 
 end

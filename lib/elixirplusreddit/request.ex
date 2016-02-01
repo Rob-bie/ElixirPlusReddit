@@ -11,23 +11,23 @@ defmodule ElixirPlusReddit.Request do
 
   def request_token(url, query, options) do
     options = [body: encode_post_query(query), headers: headers] |> Keyword.merge(options)
-    HTTPotion.request(:post, url, options) |> Parser.parse(:token)
+    {HTTPotion.request(:post, url, options), :token}
   end
 
   def request(:get, url, parse_strategy) do
     options = [headers: headers(:token_required)]
-    HTTPotion.request(:get, url, options) |> Parser.parse(parse_strategy)
+    {HTTPotion.request(:get, url, options), parse_strategy}
   end
 
   def request(:get, url, query, parse_strategy) do
     url = encode_get_query(url, query)
     options = [headers: headers(:token_required)]
-    HTTPotion.request(:get, url, options) |> Parser.parse(parse_strategy)
+    {HTTPotion.request(:get, url, options), parse_strategy}
   end
 
   def request(:post, url, query, parse_strategy) do
     options = [body: encode_post_query(query), headers: headers(:token_required)]
-    HTTPotion.request(:post, url, options) |> Parser.parse(parse_strategy)
+    {HTTPotion.request(:post, url, options), parse_strategy}
   end
 
   defp headers(:token_required) do

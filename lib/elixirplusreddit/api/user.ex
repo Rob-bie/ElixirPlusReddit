@@ -5,7 +5,7 @@ defmodule ElixirPlusReddit.API.User do
   """
 
   alias ElixirPlusReddit.RequestBuilder
-  alias ElixirPlusReddit.RequestServer
+  alias ElixirPlusReddit.RequestQueue
   alias ElixirPlusReddit.Paginator
   alias ElixirPlusReddit.Scheduler
 
@@ -1028,7 +1028,7 @@ defmodule ElixirPlusReddit.API.User do
   defp listing(from, tag, username, options, endpoint, priority) do
     url = "#{@user_base}/#{username}/#{endpoint}"
     request_data = RequestBuilder.format_get(from, tag, url, options, :listing, priority)
-    RequestServer.enqueue_request(request_data)
+    RequestQueue.enqueue_request(request_data)
   end
 
 end
