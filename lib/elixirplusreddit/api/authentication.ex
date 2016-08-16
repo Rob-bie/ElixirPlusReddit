@@ -27,8 +27,8 @@ defmodule ElixirPlusReddit.API.Authentication do
   defp retry_until_success(endpoint, body, basic_auth) do
     {resp, strategy} = Request.request_token(@token_endpoint, body, basic_auth)
     case resp.status_code do
-      503 -> retry_until_success(endpoint, body, basic_auth)
-      _   -> Parser.parse(resp, strategy)
+      c when c in 500..599 -> retry_until_success(endpoint, body, basic_auth)
+      _ -> Parser.parse(resp, strategy)
     end
   end
 

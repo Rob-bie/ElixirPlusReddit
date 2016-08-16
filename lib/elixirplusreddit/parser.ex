@@ -21,12 +21,25 @@ defmodule ElixirPlusReddit.Parser do
     Enum.map(resp.data.trophies, fn(trophy) -> trophy.data end)
   end
 
+  def parse(resp, :listing) when is_list(resp) do
+    for r <- resp, do: parse(r, :listing)
+  end
+
   def parse(resp, :listing) do
-    Map.update!(resp.data, :children, fn(children) ->
-      Enum.map(children, fn(child) ->
-        child.data
+    parse_data(resp)
+  end
+
+  defp parse_data(resp) do
+    # Recursively flatten the data member of any children
+    if Map.has_key?(resp, :data) && Map.has_key?(resp.data, :children) do
+      Map.update!(resp.data, :children, fn(children) ->
+        Enum.map(children, fn(child) ->
+          parse_data(child.data)
+        end)
       end)
-    end)
+    else
+      resp
+    end
   end
 
   def parse(resp, :reply) do
